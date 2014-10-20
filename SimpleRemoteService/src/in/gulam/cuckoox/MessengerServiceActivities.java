@@ -11,6 +11,7 @@ import android.os.IBinder;
 import android.os.Message;
 import android.os.Messenger;
 import android.os.RemoteException;
+import android.util.Log;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.Button;
@@ -27,6 +28,7 @@ import android.widget.Toast;
         TextView mCallbackText;
         
         MyParcelable myParcelableMsg = null;
+        Bundle bundle = null;
         
         /**
          * Handler of incoming messages from service.
@@ -36,9 +38,21 @@ import android.widget.Toast;
             public void handleMessage(Message msg) {
                 switch (msg.what) {
                     case MessengerService.MSG_SET_VALUE:
-                    	myParcelableMsg = (MyParcelable)msg.obj;
-                        mCallbackText.setText("Reply from : " + myParcelableMsg.getData());
-                        break;
+                    	try
+                    	{
+                    		Log.i("handleMessage@MessengerServiceActivities.java", "msg.what = MSG_SET_VALUE");
+                    		bundle = msg.getData();
+                    		Log.i("handleMessage@MessengerServiceActivities.java", "msg.getData successful" + bundle.toString());
+                    		myParcelableMsg = bundle.getParcelable(ACTIVITY_SERVICE);
+                    		Log.i("handleMessage@MessengerServiceActivities.java", "bundle.getParcelable successful" + myParcelableMsg.toString());
+                    		
+                    		mCallbackText.setText("Reply from : " + myParcelableMsg.getData());
+                        }
+                    	catch(Exception e)
+                    	{
+                    		e.printStackTrace();
+                    	}
+                    	break;
                     default:
                         super.handleMessage(msg);
                 }
@@ -164,7 +178,7 @@ import android.widget.Toast;
 					mService.send(msg);
 				} catch (RemoteException e) {
 					// TODO Auto-generated catch block
-					//e.printStackTrace();
+					e.printStackTrace();
 				}
             }
         };

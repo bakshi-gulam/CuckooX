@@ -6,7 +6,10 @@ import android.app.Notification;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.app.Service;
+import android.content.Context;
 import android.content.Intent;
+import android.content.pm.PackageManager.NameNotFoundException;
+import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.Message;
@@ -24,6 +27,8 @@ public class MessengerService extends Service {
         int mValue = 0;
 
         MyParcelable myParcelableMsg = null;
+        Bundle bundle = null;
+        Context context = null;
         
         /**
          * Command to the service to register a client, receiving callbacks from the
@@ -65,7 +70,20 @@ public class MessengerService extends Service {
                                         try {
 //                                            mClients.get(i).send(Message.obtain(null, MSG_SET_VALUE, mValue, 0));
                                         	myParcelableMsg = new MyParcelable("Local Service");
-                                            msg.replyTo.send(this.obtainMessage(MSG_SET_VALUE,myParcelableMsg));
+                                        	try {
+												context = createPackageContext("in.gulam.cuckoox", Context.CONTEXT_IGNORE_SECURITY | Context.CONTEXT_INCLUDE_CODE);
+											} catch (NameNotFoundException e) {
+												// TODO Auto-generated catch block
+												e.printStackTrace();
+											}
+                                        	
+                                        	bundle = new Bundle();
+                                        	bundle.setClassLoader(context.getClassLoader());
+                                        	bundle.putParcelable(ACTIVITY_SERVICE, myParcelableMsg);
+                                        	
+                                        	//msg.setData(bundle);
+                                            msg.replyTo.send(Message.obtain(null, MSG_SET_VALUE, bundle));
+                                            //msg.replyTo.send(this.obtainMessage(MSG_SET_VALUE,bundle));
                                         } catch (RemoteException e) {
                                                 // The client is dead. Remove it from the list;
                                                 // we are going through the list from back to front
